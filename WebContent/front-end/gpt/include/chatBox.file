@@ -1,0 +1,447 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="BIG5"%>
+<script>
+hideChat(0);
+
+    $('#prime').click(function() {
+        toggleFab();
+    });
+
+    //Toggle chat and links
+   function toggleFab() {
+        $('.prime').toggleClass('zmdi-comment-outline');
+        $('.prime').toggleClass('zmdi-close');
+        $('.prime').toggleClass('is-active');
+        $('.prime').toggleClass('is-visible');
+        $('#prime').toggleClass('is-float');
+        $('.chat').toggle();
+        $('.fab').toggleClass('is-visible');
+        $('div#friendGroup').attr("style", "display:none;");
+
+        $('#chat_converse').css('display', 'none');
+        $('#chat_body').css('display', 'none');
+        $('#chat_form').css('display', 'none');
+        $('.chat_login').css('display', 'none');
+        $('.chat_fullscreen_loader').css('display', 'block');
+        $('#chat_fullscreen').css('display', 'block');
+
+    }
+    $('#chat_fullscreen_loader').click(function(e) {
+    	$('div#friendGroup').toggle();
+    });
+
+    function hideChat(hide) {
+        switch (hide) {
+            case 0:
+                $('#chat_converse').css('display', 'none');
+                $('#chat_body').css('display', 'none');
+                $('#chat_form').css('display', 'none');
+                $('.chat_login').css('display', 'block');
+                $('.chat_fullscreen_loader').css('display', 'none');
+                $('#chat_fullscreen').css('display', 'none');
+                break;
+        }
+    }
+
+	var chatMyPoint = "/FriendWS/${memVOLogin.mem_id}";
+	var host = window.location.host;
+	var path = window.location.pathname;
+	var chatWebCtx = path.substring(0, path.indexOf('/', 1));
+	var chatEndPointURL = "ws://" + window.location.host + chatWebCtx + chatMyPoint;
+
+	var chat_head = document.getElementById("chat_head");
+	var messagesArea = document.getElementById("chat_fullscreen");
+	var chat_row = document.getElementById("chat_row");
+	var self = '${memVOLogin.mem_id}';
+	var chatWebSocket;
+	let friendOnlineArray = [];
+	let checkbox = [];
+	let friendsValue = [];
+	let friends = [];
+	let chatImgName;
+	var membersListObj;
+	let chatFile;
+	
+	$(document).ready(function(){
+		$.ajax({
+			type : "GET",
+			url : "<%=request.getContextPath()%>/front-end/mem/mem.do",
+			data : {"action": "getAll"},
+			dataType : "json",
+			success : function(resGetMemberList) {
+				membersListObj = resGetMemberList;
+			}
+		});
+	});
+	
+	function connectChat() {
+		// create a chatWebSocket
+		chatWebSocket = new WebSocket(chatEndPointURL);
+		chatWebSocket.onopen = function(event) {
+		console.log("Connect Success!");
+		};
+	
+		chatWebSocket.onmessage = function(event) {
+			var jsonObj = JSON.parse(event.data);
+			if ("open" === jsonObj.type) {
+				friendOnlineArray = jsonObj.user;
+				refreshFriendList(jsonObj);
+			} else if ("history" === jsonObj.type) {
+				var messages = JSON.parse(jsonObj.message);
+				var clickReceiver = jsonObj.receiver;
+				if((messages.length) === 0 && (!checkbox.includes(clickReceiver))){
+					clickContact(jsonObj);
+					checkbox.push(clickReceiver);
+				}else{
+				messagesArea.innerHTML = '';
+				// 這行的jsonObj.message是從redis撈出跟好友的歷史訊息，再parse成JSON格式處理
+				for (var i = 0; i < messages.length; i++) {
+					var historyData = JSON.parse(messages[i]);
+					var messageTime = historyData.messageTime;
+					var showMsg = historyData.message;
+					var message;
+					// 根據發送者是自己還是對方來給予不同的class名, 以達到訊息左右區分
+					if(historyData.sender === self){
+						message = '';
+						message = '<span class="chat_msg_item chat_msg_item_user">'+showMsg+'</span><div class="status">'+messageTime+'</div>';
+						$('#chat_fullscreen').append(message);
+					} else{
+						console.log("history other");
+						message = '';
+						message = 
+							  '<span class="chat_msg_item chat_msg_item_admin">'+
+						          '<div class="chat_avatar">'+
+						          	'<img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+jsonObj.receiver+'"/>'+
+						          '</div>'+showMsg+
+						      '</span>'+
+						      '<div class="status">'+messageTime+'</div>';
+						$('#chat_fullscreen').append(message);  
+					}
+				}
+				messagesArea.scrollTop = messagesArea.scrollHeight;
+				}
+			} else if ("chat" === jsonObj.type) {
+				if(jsonObj.sender === self){
+					message = '';
+					message = '<span class="chat_msg_item chat_msg_item_user">'+jsonObj.message+'</span><div class="status">'+jsonObj.messageTime+'</div>';
+					$('#chat_fullscreen').append(message);
+					
+					var listMessage = "#"+jsonObj.receiver+" #historyMessage";
+					var listTime = "#"+jsonObj.receiver+" #historyTime";
+					
+					if((jsonObj.message).indexOf("img src") !== -1){
+						$(listMessage).text("圖片訊息");
+					}else if((jsonObj.message).indexOf("<a href=") !== -1){
+						$(listMessage).text("檔案訊息");
+					}else{
+						$(listMessage).text(jsonObj.message);
+					}
+					
+					$(listTime).text(jsonObj.messageTime);
+					
+				}else if(jsonObj.receiver === self && jsonObj.sender === (chat_head.getAttribute('value'))){
+					message = '';
+					message = 
+						  '<span class="chat_msg_item chat_msg_item_admin">'+
+					          '<div class="chat_avatar">'+
+					          	'<img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+jsonObj.receiver+'"/>'+
+					          '</div>'+jsonObj.message+
+					      '</span>'+
+					      '<div class="status">'+jsonObj.messageTime+'</div>';
+					$('#chat_fullscreen').append(message);  
+					
+					var listMessage = "#"+jsonObj.sender+" #historyMessage";
+					var listTime = "#"+jsonObj.sender+" #historyTime";
+					
+					if((jsonObj.message).indexOf("img src") !== -1){
+						$(listMessage).text("圖片訊息");
+					}else if((jsonObj.message).indexOf("<a href=") !== -1){
+						$(listMessage).text("檔案訊息");
+					}else{
+						$(listMessage).text(jsonObj.message);
+					}
+					
+					$(listTime).text(jsonObj.messageTime);
+				}else if(jsonObj.receiver === self && jsonObj.receiver !== (chat_head.getAttribute('value'))){ 
+					if(friends.includes(jsonObj.sender)){
+						var listMessage = "#"+jsonObj.sender+" #historyMessage";
+						var listTime = "#"+jsonObj.sender+" #historyTime";
+						
+						if((jsonObj.message).indexOf("img src") !== -1){
+							$(listMessage).text("圖片訊息");
+						}else if((jsonObj.message).indexOf("<a href=") !== -1){
+							$(listMessage).text("檔案訊息");
+						}else{
+							$(listMessage).text(jsonObj.message);
+						}
+						$(listTime).text(jsonObj.messageTime);
+						
+						$('#'+jsonObj.sender+' h1').attr('style','color:blue; font-weight:900;')
+						$('a#prime').attr('style', 'color:yellow;')
+					}else{
+						chat_row.innerHTML +='<div class="memberID"><div class="people"><img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+jsonObj.sender+'"/><div id=' + jsonObj.sender + ' class="column" name="friendName" value="' + jsonObj.sender + '" ><h1 id="friendsName" value="'+jsonObj.sender+'">' + membersListObj[jsonObj.sender] + '</h1><div id="onlineCircle" style=""></div><p id="historyMessage"></p><p id="historyTime"></p></div></div></div>';
+						
+						var listMessage = "#"+jsonObj.sender+" #historyMessage";
+						var listTime = "#"+jsonObj.sender+" #historyTime";
+						
+						if((jsonObj.message).indexOf("img src") !== -1){
+							$(listMessage).text("圖片訊息");
+						}else if((jsonObj.message).indexOf("<a href=") !== -1){
+							$(listMessage).text("檔案訊息");
+						}else{
+							$(listMessage).text(jsonObj.message);
+						}
+						$(listTime).text(jsonObj.messageTime);
+						
+						$('#'+jsonObj.sender+' h1').attr('style','color:blue; font-weight:900;')
+						$('a#prime').attr('style', 'color:yellow;')
+						friends.push(jsonObj.sender);
+					}
+				} 
+				messagesArea.scrollTop = messagesArea.scrollHeight;
+			} else if ("close" === jsonObj.type) {
+				refreshFriendList(jsonObj);
+			}
+		};
+		chatWebSocket.onclose = function(event) {
+			console.log("Disconnected!");
+		};
+	}
+	
+	function sendChatMessage() {
+		var now = new Date();
+		var messageTime = now.toLocaleTimeString();
+		var inputMessage = document.getElementById("chatSend");
+		var friend = chat_head.getAttribute('value');
+		var message = inputMessage.value.trim();
+		
+		console.log("friend = "+friend);
+		console.log("sendChatMessage = "+message);
+
+		if (message === "") {
+			alert("Input a message");
+			inputMessage.focus();
+		} else if (friend === "") {
+			alert("Choose a friend");
+		} else {
+			var jsonObj = {
+				"type" : "chat",
+				"sender" : self,
+				"receiver" : friend,
+				"message" : message,
+				"messageTime" : messageTime
+			};
+			chatWebSocket.send(JSON.stringify(jsonObj));
+			inputMessage.value = "";
+			inputMessage.focus();
+			if(!friends.includes(friend)){
+				friends.push(friend);
+			}
+		}
+	}
+	
+	// 有好友上線或離線就更新列表
+	function refreshFriendList(jsonObj) {
+		if(jsonObj.user === self){
+			friendsValue = [];
+			friends = [];
+			
+			friends = jsonObj.friends;
+			friendsValue = jsonObj.friendsValue;
+			
+			
+			chat_row.innerHTML = '';
+			for (var i = 0; i < friends.length; i++) {
+				if (friends[i] === self) { continue; }
+					if((jsonObj.users).includes(friends[i])){
+						var a = friends[i];
+						chat_row.innerHTML +='<div class="memberID"><div class="people"><img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+friends[i]+'"/><div id=' + friends[i] + ' class="column" name="friendName" value="' + friends[i] + '" ><h1 id="friendsName" value="'+friends[i]+'">' + membersListObj[friends[i]] + '</h1><div id="onlineCircle" style=""></div></div></div></div>';
+					}else{
+						chat_row.innerHTML +='<div class="memberID"><div class="people"><img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+friends[i]+'"/><div id=' + friends[i] + ' class="column" name="friendName" value="' + friends[i] + '" ><h1 id="friendsName" value="'+friends[i]+'">' + membersListObj[friends[i]] + '</h1><div id="onlineCircle" style="background-color: white;"></div></div></div></div>';
+					}
+			}
+			
+			for(var i = 0;i<friendsValue.length;i++){
+				
+				let onlineMsg;
+				if((JSON.parse(friendsValue[i]).message).indexOf("img src") !== -1){
+					onlineMsg = "圖片訊息";
+				}else{
+					onlineMsg = (JSON.parse(friendsValue[i])).message;
+				}
+				
+				
+				if(JSON.parse(friendsValue[i]).sender != self){
+					var name = "#"+JSON.parse(friendsValue[i]).sender;
+					var nameMessage = "<p id='historyMessage'>"+onlineMsg+"</p><p id='historyTime'>"+JSON.parse(friendsValue[i]).messageTime+"</p>";
+					$(name).append(nameMessage);
+					continue;
+				}
+				
+				if(JSON.parse(friendsValue[i]).receiver != self){
+					var name = "#"+JSON.parse(friendsValue[i]).receiver;
+					var nameMessage = "<p id='historyMessage'>"+onlineMsg+"</p><p id='historyTime'>"+JSON.parse(friendsValue[i]).messageTime+"</p>";
+					$(name).append(nameMessage);
+					continue;
+				}
+			}
+			addListener();
+		}
+		if("open" === jsonObj.type){
+			var onlineTarget = "#"+jsonObj.user+" #onlineCircle";
+			 $(onlineTarget).attr("style", "");
+		}else if("close" === jsonObj.type){
+			var onlineTarget = "#"+jsonObj.user+" #onlineCircle";
+			 $(onlineTarget).attr("style", "background-color: white;");
+		}
+	}
+	
+	// 點擊Contact聊天
+	function clickContact(jsonObj) {
+		var receiver = jsonObj.receiver;
+			if((friendOnlineArray).includes(receiver)){
+				chat_row.innerHTML +='<div class="memberID"><div class="people"><img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+receiver+'"/><div id=' + receiver + ' class="column" name="friendName" value=' + receiver + ' ><h1 id="friendsName" value="'+receiver+'">' + membersListObj[receiver] + '</h1><div id="onlineCircle" style=""></div><p id="historyMessage"></p><p id="historyTime"></p></div></div></div>';
+				messagesArea.innerHTML = '';
+			}else{
+				chat_row.innerHTML +='<div class="memberID"><div class="people"><img src="/EA102G4/front-end/mem/headphoto.do?mem_id='+receiver+'"/><div id=' + receiver + ' class="column" name="friendName" value=' + receiver + ' ><h1 id="friendsName" value="'+receiver+'">' + membersListObj[receiver] + '</h1><div id="onlineCircle" style="background-color: white;"></div><p id="historyMessage"></p><p id="historyTime"></p></div></div></div>';
+				messagesArea.innerHTML = '';
+			}
+	}
+	
+	$('.modal-dialog.modal-dialog-centered.modal-dialog-scrollable').on("click",".btn.btn-primary.contact",function(e){
+		var friend = $(this).attr("value");
+		console.log("friend = "+friend);
+		updateFriendName(friend);
+		var jsonObj = {
+				"type" : "history",
+				"sender" : self,
+				"receiver" : friend,
+				"message" : "",
+				"messageTime" : ""
+			};
+		chatWebSocket.send(JSON.stringify(jsonObj));
+		$('#prime').click();
+		$('#modalClose').click();
+		$('#imageUpload').attr('disabled', false);
+		$('#chatSend').attr('disabled', false);
+	});
+	
+	
+	// 註冊列表點擊事件並抓取好友名字以取得歷史訊息
+	function addListener() {
+		$('#friendGroup').on("click", "#friendsName", function(){
+			var friend =$(this).attr("value");
+			updateFriendName(friend);
+			var jsonObj = {
+					"type" : "history",
+					"sender" : self,
+					"receiver" : friend,
+					"message" : "",
+					"messageTime" : ""
+				};
+			chatWebSocket.send(JSON.stringify(jsonObj));
+			$(this).attr('style','color:block;')
+			$('a#prime').attr('style', 'color:block;')
+			$('#imageUpload').attr('disabled', false);
+			$('#chatSend').attr('disabled', false);
+		});
+	}
+	
+	function disconnectChat() {
+		chatWebSocket.close();
+	}
+	
+	function updateFriendName(name) {
+		console.log("updateFriendName_name = "+name);
+		var img = '/EA102G4/front-end/mem/headphoto.do?mem_id='+name;
+		$('#chat_head').text(membersListObj[name]);
+		$('#chat_head').attr("value", name);
+		$('.chat_header img').attr('src', img);
+	}
+	
+	
+	//檔案上傳區
+	$('.fileUpload_target').click(function(){
+		$('#fab_file #fileUpload').click(); 
+	});
+	
+	$('#fab_file #fileUpload').change(function(e){
+		var now = new Date();
+		var friend = chat_head.getAttribute('value');
+		var messageTime = now.toLocaleTimeString();
+		let file = e.target.files[0];
+		let form = new FormData();
+		chatFile = file.name;
+		let message = '<a href="/EA102G4/images_uploaded/'+chatFile+'" download><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-file-earmark" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/><path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z"/></svg>'+chatFile+'</a>';
+		
+		form.append("action", "chatfile");
+		form.append("file", file);
+		
+		$.ajax({
+			  type : "POST",
+			  url : "<%=request.getContextPath()%>/front-end/gpt/fileUpload.do",
+			  data: form,
+			  cache: false,
+			  processData: false,
+			  contentType: false
+			}).done(function(res) {
+				var jsonObj = {
+						"type" : "chat",
+						"sender" : self,
+						"receiver" : friend,
+						"message" : message,
+						"messageTime" : messageTime
+					};
+				chatWebSocket.send(JSON.stringify(jsonObj));
+			}).fail(function(res) {});
+	});
+	
+	//照片上傳區
+	$('.zmdi.zmdi-camera').click(function(){
+		$('#fab_camera #imageUpload').click(); 
+	});
+	
+	$('#fab_camera #imageUpload').change(function(e){
+		var now = new Date();
+		var friend = chat_head.getAttribute('value');
+		var messageTime = now.toLocaleTimeString();
+		let file = e.target.files[0];
+		let form = new FormData();
+		chatImgName = _uuid();
+		let message = '<img src="/EA102G4/front-end/gpt/chatimgtool.do?img_name='+chatImgName+'" alt="" style="width: 200px">';
+		
+		form.append("action", "chatimg");
+		form.append("img_name", chatImgName);
+		form.append("file", file);
+		
+		$.ajax({
+			  type : "POST",
+			  url : "<%=request.getContextPath()%>/front-end/gpt/chatimg.do",
+			  data: form,
+			  cache: false,
+			  processData: false,
+			  contentType: false
+			}).done(function(res) {
+				var jsonObj = {
+						"type" : "chat",
+						"sender" : self,
+						"receiver" : friend,
+						"message" : message,
+						"messageTime" : messageTime
+					};
+				chatWebSocket.send(JSON.stringify(jsonObj));
+			}).fail(function(res) {});
+	});
+	
+	//編碼小工具
+	function _uuid() {
+		  var d = Date.now();
+		  if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
+		    d += performance.now(); //use high-precision timer if available
+		  }
+		  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		    var r = (d + Math.random() * 16) % 16 | 0;
+		    d = Math.floor(d / 16);
+		      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+		  });
+		}
+</script>

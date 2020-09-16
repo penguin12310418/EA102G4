@@ -1,0 +1,42 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="BIG5"%>
+
+
+<!-- noticeMessage -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.css">
+<!-- animate -->
+<link rel="stylesheet" href="assets/css/animate.css">
+<!-- weatherBotton -->
+<link rel="stylesheet" href="assets/css/weatherBotton.css">
+<!-- bootstrap -->
+<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+<!-- magnific popup -->
+<link rel="stylesheet" href="assets/css/magnific-popup.css">
+<!-- Slick -->
+<link rel="stylesheet" href="assets/css/slick.css" />
+<link rel="stylesheet" href="assets/css/slick-theme.css" />
+<!-- owl carousel -->
+<link rel="stylesheet" href="assets/css/owl.carousel.min.css">
+<!-- fontawesome -->
+<link rel="stylesheet" href="assets/css/font-awesome.min.css">
+<!-- flaticon -->
+<link rel="stylesheet" href="assets/css/flaticon.css">
+<!-- videoplayer -->
+<link rel="stylesheet" href="assets/css/rvideoplayer.css">
+<!-- hamburgers -->
+<link rel="stylesheet" href="assets/css/hamburgers.min.css">
+<!-- nice select -->
+<link rel="stylesheet" href="assets/css/nice-select.css">
+<!-- Main Stylesheet -->
+<link rel="stylesheet" href="assets/css/style.css">
+<!-- responsive Stylesheet -->
+<link rel="stylesheet" href="assets/css/responsive.css">
+<!-- wedy Stylesheet -->
+<link rel="stylesheet" href="assets/css/wedy.css">
+<!-- Google Web Fonts -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!--1 jquery -->
+<script src="assets/js/jquery-2.2.4.min.js"></script>
+<!-- chatCss -->
+<link rel="stylesheet" href="assets/css/chatCss.css">
+<!-- footer -->
+<link rel="stylesheet" href="assets/css/footer.css">

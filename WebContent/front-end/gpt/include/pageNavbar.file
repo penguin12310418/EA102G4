@@ -1,0 +1,112 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="BIG5"%>
+
+<!-- navbar start -->
+	<div class="zarxio-navbar sticky-top">
+		<nav class="navbar navbar-area navbar-expand-lg black-bg nav-style-02" style=" padding-top: 0px; padding-bottom: 0px; ">
+			<div class="container nav-container">
+				<div class="responsive-mobile-menu">
+					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#billatrail_main_menu" aria-expanded="false"
+						aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span> <span class="bar1"></span> <span class="bar2"></span> <span class="bar3"></span>
+					</button>
+				</div>
+				<div class="logo">
+					<a href="<%=request.getContextPath()%>/front-end/index.jsp"> <img src="assets/img/logo_new.png" alt="logo" style="width: 250px; height: 100%; "></a>
+				</div>
+				<div class="collapse navbar-collapse" id="billatrail_main_menu">
+					<ul class="navbar-nav menu-open">
+						<li class="menu-item-has-children">
+                           <a href="#">Coach&Class</a>
+					       <ul class="sub-menu">
+							        <li><a href="${request.getContextPath() }/EA102G4/front-end/ProAndClass/classes.jsp">PrivateClass</a></li>
+							       	<li><a href="${request.getContextPath() }/EA102G4/front-end/groupclass/groupClassSelectPage.jsp">GroupClass</a></li>
+							       <li><a href="${request.getContextPath() }/EA102G4/front-end/ProAndClass/pro.jsp">Trainer</a></li>
+							   <c:if test="${memVOLogin != null }">    
+							       <li><a href="${request.getContextPath() }/EA102G4/front-end/ProAndClass/proApplication.jsp">TrainerApplication</a></li>
+							       <li><a href="${request.getContextPath() }/EA102G4/front-end/groupclass/listMemOrder.jsp">Check My Order</a></li>
+							       </c:if>
+							       <c:if test="${proVOLogin != null }">
+							       		<li><a href="${request.getContextPath() }/EA102G4/front-end/ProAndClass/myClass.jsp">TrainerBack-end</a></li>
+						       </c:if>
+			        		</ul>
+                        </li>
+                        <li class="menu-item-has-children">
+                            <a href="#">InGymStore</a>
+                            <ul class="sub-menu">
+                                <li><a href="${pageContext.request.contextPath}/front-end/product/list-all-product.jsp">Shop</a></li>
+                                <li><a href="${pageContext.request.contextPath}/front-end/product/add-product.jsp">Sell Something</a></li>
+                                <li><a href="${pageContext.request.contextPath}/front-end/product/list-product-by-memId.jsp">Your Product</a></li>
+                                <li><a href="${pageContext.request.contextPath}/front-end/purchase-order/list-order-by-memId-seller.jsp">Seller Order</a></li>
+                                <li><a href="${pageContext.request.contextPath}/front-end/purchase-order/list-order-by-memId-buyer.jsp">Buyer Order</a></li>
+                                <li><a href="${pageContext.request.contextPath}/front-end/product-tracking/list-all-tracking.jsp">Tracking Product</a></li>
+                            </ul>
+                        </li>
+                        <li class="menu-item-has-children current-menu-item"><a href="#">Activity</a>
+							<ul class="sub-menu">
+								<li><a href="<%=request.getContextPath()%>/front-end/gpt/listAllGroup.jsp">Activity</a></li>
+								<li style='display:${memVOLogin == null ?"none":""};'><a href="<%=request.getContextPath()%>/front-end/gpt/group.do?action=viewMyGroup&mem_id=${memVOLogin.mem_id }">My
+										Activity</a></li>
+								<li style='display:${memVOLogin == null ?"none":""};'><a href="<%=request.getContextPath()%>/front-end/gpt/groupAdd.jsp">Create Activity</a></li>
+							</ul>
+						</li>
+                        <li class="menu-item-has-children">
+                            <a href="#">Article</a>
+                            <ul class="sub-menu">
+                                <li><a href="/EA102G4/front-end/article/listAllArticle.jsp">Article</a></li>
+                            </ul>
+                        </li>
+                        <li class="menu-item-has-children">
+                            <a href="#">Member</a>
+                            <ul class="sub-menu">
+                                <li><a href="<%=request.getContextPath()%>/front-end/mem/memDetail.jsp">Personal Information</a></li>
+                                <li><a href="<%=request.getContextPath()%>/front-end/bodyrecord/bodyRecord.jsp">MyBodyData</a></li>
+                                <li><a href="<%=request.getContextPath()%>/front-end/sportrecord/sportRecord.jsp">MySportData</a></li>
+                                <li><a href="<%=request.getContextPath()%>/front-end/foodrecord/foodRecord.jsp">MyFoodRecord</a></li>
+                                <%if (memVOLogin != null) {%>
+                                <li><a href="<%=request.getContextPath()%>/front-end/mem/changeMyPassword.jsp">ChangeMyPassword</a></li>
+                                 <li><a href="<%=request.getContextPath()%>/front-end/coin/addCoinOrder.jsp">Point Charge</a></li>
+                                <li><a href="<%=request.getContextPath()%>/front-end/coin/listMemCoinOrder.jsp">Credit History</a></li>
+                                <%}%>
+                            </ul>
+                        </li>
+						<%
+							if (memVOLogin != null) {
+						%>
+						<li>
+						<a href ="<%=request.getContextPath()%>/front-end/mem/mem.do?action=logout">Logout</a>
+						</li>
+						<%
+							} else {
+						%>
+						<li><a href="<%=request.getContextPath()%>/front-end/mem/signin.jsp">Login</a></li>
+						<%
+							}
+						%>
+					</ul>
+				</div>
+				<%
+					if (memVOLogin != null) {
+				%>
+				<a style="color:white;" id="hi_mem" href="<%=request.getContextPath()%>/front-end/mem/memDetail.jsp">Welcome!<%=memVOLogin.getMem_name()%></a>
+				<%
+					}
+				%>
+				</ul>
+				<div class="nav-right-part">
+					<ul>
+						<li style="color:white;" class="search" id="search"><a href="#"><i class="fa fa-search"></i></a></li>
+						<li>
+							<div class="hamberger-area d-none d-lg-block">
+								<div class="menu-toggle hamburger hamburger--squeeze is-active">
+									<div class="hamburger-box">
+										<div class="hamburger-inner"></div>
+									</div>
+								</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</div>
+	<!-- navbar end -->

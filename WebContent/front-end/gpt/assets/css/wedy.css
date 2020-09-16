@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+#image-outside{
+/* 	border:0px solid red; */
+/* 	box-shadow:3px 3px 5px 6px #cccccc; */
+	width: 400px;
+	height:400px;
+    max-width: 400px;
+    max-height:400px;
+}
+#myFile{
+	margin-top:20px;
+}
+
+#related-product-title{
+	font-family:Microsoft JhengHei;
+}

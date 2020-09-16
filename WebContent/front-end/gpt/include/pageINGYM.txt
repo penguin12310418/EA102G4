@@ -1,0 +1,22 @@
+<div class="col-md-12">
+<div class="pagination-area d-flex justify-content-center margin-top-50">
+<ul>
+<li style="white-space: nowrap;"<%=(pageIndex >= rowsPerPage) ? "" : "hidden"%>>
+	<A href="<%=request.getRequestURI()%>?whichPage=<%=whichPage - 1%>">
+		<span class="next page-bumber"><i class="fa fa-angle-left"></i>Prev</span>
+	</A>
+</li>
+
+<%for (int i = 1; i <= pageNumber; i++) {%>
+	<li>
+		<A href="<%=request.getRequestURI()%>?whichPage=<%=i%>">
+			<span class='page-bumber <%=(whichPage == i) ? "current" : ""%>'><%=i%></span>
+		</A>
+	</li>
+<%}%>   
+<li style="white-space: nowrap;"<%=(pageIndex<pageIndexArray[pageNumber-1]) ? "" : "hidden"%>>
+<A href="<%=request.getRequestURI()%>?whichPage=<%=whichPage + 1%>"><span class="next page-bumber">Next<i class="fa fa-angle-right"></i></span></A>
+</li>
+</ul>
+</div>
+</div>

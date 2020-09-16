@@ -1,0 +1,30 @@
+footer.footer-area.footer-style-1.black-bg.padding-top-160 {
+    margin-top: 100px;
+    padding-top: 80px;
+}
+
+ul.contact_info_list {
+    text-align: initial;
+}
+
+.footer-logo img{
+	display: block;
+}
+
+h4.widget-title {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+p.desc {
+	margin-top: 0px;
+}
+
+.widget .recent_post_item li.single-recent-post-item .content .title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.footer-widget.widget {
+    text-align: left;
+}
